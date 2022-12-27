@@ -97,6 +97,8 @@ type MatchesNode struct {
 	Right  Node
 }
 
+type NotMatchesNode MatchesNode
+
 type PropertyNode struct {
 	base
 	Node     Node

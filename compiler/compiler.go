@@ -143,6 +143,8 @@ func (c *compiler) compile(node ast.Node) {
 		c.BinaryNode(n)
 	case *ast.MatchesNode:
 		c.MatchesNode(n)
+	case *ast.NotMatchesNode:
+		c.NotMatchesNode(n)
 	case *ast.PropertyNode:
 		c.PropertyNode(n)
 	case *ast.IndexNode:
@@ -399,6 +401,17 @@ func (c *compiler) MatchesNode(node *ast.MatchesNode) {
 	c.compile(node.Left)
 	c.compile(node.Right)
 	c.emit(OpMatches)
+}
+
+func (c *compiler) NotMatchesNode(node *ast.NotMatchesNode) {
+	if node.Regexp != nil {
+		c.compile(node.Left)
+		c.emit(OpNotMatchesConst, c.makeConstant(node.Regexp)...)
+		return
+	}
+	c.compile(node.Left)
+	c.compile(node.Right)
+	c.emit(OpNotMatches)
 }
 
 func (c *compiler) PropertyNode(node *ast.PropertyNode) {

@@ -48,6 +48,8 @@ var binaryOperators = map[string]operator{
 	"<=":         {20, left},
 	"not in":     {20, left},
 	"in":         {20, left},
+	"=~":         {20, left},
+	"!~":         {20, left},
 	"matches":    {20, left},
 	"contains":   {20, left},
 	"startsWith": {20, left},
@@ -158,7 +160,7 @@ func (p *parser) parseExpression(precedence int) Node {
 					nodeRight = p.parseExpression(op.precedence)
 				}
 
-				if token.Is(Operator, "matches") {
+				if token.Is(Operator, "matches") || token.Is(Operator, "=~") {
 					var r *regexp.Regexp
 					var err error
 
@@ -169,6 +171,22 @@ func (p *parser) parseExpression(precedence int) Node {
 						}
 					}
 					nodeLeft = &MatchesNode{
+						Regexp: r,
+						Left:   nodeLeft,
+						Right:  nodeRight,
+					}
+					nodeLeft.SetLocation(token.Location)
+				} else if token.Is(Operator, "unmatches") || token.Is(Operator, "!~") {
+					var r *regexp.Regexp
+					var err error
+
+					if s, ok := nodeRight.(*StringNode); ok {
+						r, err = regexp.Compile(s.Value)
+						if err != nil {
+							p.error("%v", err)
+						}
+					}
+					nodeLeft = &NotMatchesNode{
 						Regexp: r,
 						Left:   nodeLeft,
 						Right:  nodeRight,

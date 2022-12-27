@@ -79,6 +79,8 @@ func (v *visitor) visit(node ast.Node) reflect.Type {
 		t = v.BinaryNode(n)
 	case *ast.MatchesNode:
 		t = v.MatchesNode(n)
+	case *ast.NotMatchesNode:
+		t = v.NotMatchesNode(n)
 	case *ast.PropertyNode:
 		t = v.PropertyNode(n)
 	case *ast.IndexNode:
@@ -285,6 +287,17 @@ func (v *visitor) MatchesNode(node *ast.MatchesNode) reflect.Type {
 	return v.error(node, `invalid operation: matches (mismatched types %v and %v)`, l, r)
 }
 
+func (v *visitor) NotMatchesNode(node *ast.NotMatchesNode) reflect.Type {
+	l := v.visit(node.Left)
+	r := v.visit(node.Right)
+
+	if isString(l) && isString(r) {
+		return boolType
+	}
+
+	return v.error(node, `invalid operation: unmatches (mismatched types %v and %v)`, l, r)
+}
+
 func (v *visitor) PropertyNode(node *ast.PropertyNode) reflect.Type {
 	t := v.visit(node.Node)
 	if t, ok := fieldType(t, node.Property); ok {
@@ -348,9 +361,9 @@ func (v *visitor) FunctionNode(node *ast.FunctionNode) reflect.Type {
 				fn.NumIn() == inputParamsCount &&
 				((fn.NumOut() == 1 && // Function with one return value
 					fn.Out(0).Kind() == reflect.Interface) ||
-				(fn.NumOut() == 2 && // Function with one return value and an error
-					fn.Out(0).Kind() == reflect.Interface &&
-					fn.Out(1) == errorType)) {
+					(fn.NumOut() == 2 && // Function with one return value and an error
+						fn.Out(0).Kind() == reflect.Interface &&
+						fn.Out(1) == errorType)) {
 				rest := fn.In(fn.NumIn() - 1) // function has only one param for functions and two for methods
 				if rest.Kind() == reflect.Slice && rest.Elem().Kind() == reflect.Interface {
 					node.Fast = true

@@ -33,6 +33,8 @@ const (
 	OpRange
 	OpMatches
 	OpMatchesConst
+	OpNotMatches
+	OpNotMatchesConst
 	OpContains
 	OpStartsWith
 	OpEndsWith

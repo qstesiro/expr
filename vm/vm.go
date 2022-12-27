@@ -242,6 +242,20 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 			r := vm.constant().(*regexp.Regexp)
 			vm.push(r.MatchString(a.(string)))
 
+		case OpNotMatches:
+			b := vm.pop()
+			a := vm.pop()
+			match, err := regexp.MatchString(b.(string), a.(string))
+			if err != nil {
+				panic(err)
+			}
+			vm.push(!match)
+
+		case OpNotMatchesConst:
+			a := vm.pop()
+			r := vm.constant().(*regexp.Regexp)
+			vm.push(!r.MatchString(a.(string)))
+
 		case OpContains:
 			b := vm.pop()
 			a := vm.pop()

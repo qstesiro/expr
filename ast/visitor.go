@@ -47,6 +47,10 @@ func (w *walker) walk(node *Node) {
 		w.walk(&n.Left)
 		w.walk(&n.Right)
 		w.visitor.Exit(node)
+	case *NotMatchesNode:
+		w.walk(&n.Left)
+		w.walk(&n.Right)
+		w.visitor.Exit(node)
 	case *PropertyNode:
 		w.walk(&n.Node)
 		w.visitor.Exit(node)
